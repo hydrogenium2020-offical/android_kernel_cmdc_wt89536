@@ -4788,7 +4788,7 @@ static int smbchg_restricted_charging(struct smbchg_chip *chip, bool enable)
 extern void ist30xx_set_ta_mode(bool mode);
 extern void tpd_usb_plugin(bool mode);
 extern void gtp_usb_plugin(bool mode);
-int set_usb_charge_mode_par = 0;
+// int set_usb_charge_mode_par = 0;
 #endif
 static void handle_usb_removal(struct smbchg_chip *chip)
 {
@@ -4797,12 +4797,12 @@ static void handle_usb_removal(struct smbchg_chip *chip)
 	int rc;
 
 #ifdef CONFIG_MACH_XIAOMI_C6
-	if (set_usb_charge_mode_par == 1)
-		ist30xx_set_ta_mode(0);
-	else if (set_usb_charge_mode_par == 2)
-		tpd_usb_plugin(0);
-	else if (set_usb_charge_mode_par == 3)
-		gtp_usb_plugin(0);
+	// if (set_usb_charge_mode_par == 1)
+	// 	ist30xx_set_ta_mode(0);
+	// else if (set_usb_charge_mode_par == 2)
+	// 	tpd_usb_plugin(0);
+	// else if (set_usb_charge_mode_par == 3)
+	// 	gtp_usb_plugin(0);
 #endif
 
 	pr_smb(PR_STATUS, "triggered\n");
@@ -4875,12 +4875,12 @@ static void handle_usb_insertion(struct smbchg_chip *chip)
 	char *usb_type_name = "null";
 
 #ifdef CONFIG_MACH_XIAOMI_C6
-	if (set_usb_charge_mode_par == 1)
-		ist30xx_set_ta_mode(1);
-	else if (set_usb_charge_mode_par == 2)
-		tpd_usb_plugin(1);
-	else if (set_usb_charge_mode_par == 3)
-		gtp_usb_plugin(1);
+	// if (set_usb_charge_mode_par == 1)
+	// 	ist30xx_set_ta_mode(1);
+	// else if (set_usb_charge_mode_par == 2)
+	// 	tpd_usb_plugin(1);
+	// else if (set_usb_charge_mode_par == 3)
+	// 	gtp_usb_plugin(1);
 #endif
 
 	pr_smb(PR_STATUS, "triggered\n");
