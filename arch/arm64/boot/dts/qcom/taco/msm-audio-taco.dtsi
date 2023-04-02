@@ -32,3 +32,32 @@
     /delete-property/ asoc-wsa-codec-names;
     /delete-property/ asoc-wsa-codec-prefixes;
 };
+&soc{
+	i2c@7af8000 {
+		status = "okay";
+			compatible = "qcom,i2c-msm-v2";
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			reg-names = "qup_phys_addr";
+			reg = <0x7af8000 0x600>;
+			interrupt-names = "qup_irq";
+			interrupts = <0x00 0x12e 0x00>;
+			qcom,clk-freq-out = <0x61a80>;
+			qcom,clk-freq-in = <0x124f800>;
+			clock-names = "iface_clk\0core_clk";
+			clocks = <0x37 0x8f283c1d 0x37 0xbd22539d>;
+			pinctrl-names = "i2c_active\0i2c_sleep";
+			pinctrl-0 = <0xf1>;
+			pinctrl-1 = <0xf2>;
+			qcom,noise-rjct-scl = <0x00>;
+			qcom,noise-rjct-sda = <0x00>;
+			qcom,master-id = <0x54>;
+			dmas = <0xe9 0x0a 0x40 0x20000020 0x20 0xe9 0x0b 0x20 0x20000020 0x20>;
+			dma-names = "tx\0rx";
+
+			tfa98xx:tfa9895@34 {
+				compatible = "nxp,tfa9895";
+				reg = <0x34>;
+			};
+	};
+};
