@@ -443,74 +443,74 @@
 	};
 };
 
-&i2c_6  { /* i2c 6 */
-	et6326@30 { /*blink */
-		compatible = "awinc,et6326";
-		reg = <0x30>;
-		rgb_led-supply = <&pm8953_l10>;
+// &i2c_6  { /* i2c 6 */
+// 	et6326@30 { /*blink */
+// 		compatible = "awinc,et6326";
+// 		reg = <0x30>;
+// 		rgb_led-supply = <&pm8953_l10>;
 		
-		red {
-			label = "red";
-			linux,default-trigger = "battery-red";
-			default-state = "off";
-			retain-state-suspended;
-		};
+// 		red {
+// 			label = "red";
+// 			linux,default-trigger = "battery-red";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};
 
-		green {
-			label = "green";
-			linux,default-trigger = "battery-green";
-			default-state = "off";
-			retain-state-suspended;
-		};
+// 		green {
+// 			label = "green";
+// 			linux,default-trigger = "battery-green";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};
 
-		blue {
-			label = "blue";
-			linux,default-trigger = "battery-blue";
-			default-state = "off";
-			retain-state-suspended;
-		};
-		white {
-			label = "white";
-			linux,default-trigger = "none";
-			default-state = "off";
-			retain-state-suspended;
-		};
+// 		blue {
+// 			label = "blue";
+// 			linux,default-trigger = "battery-blue";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};
+// 		white {
+// 			label = "white";
+// 			linux,default-trigger = "none";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};
 
-		yellow {
-			label = "yellow";
-			linux,default-trigger = "none";
-			default-state = "off";
-			retain-state-suspended;
-		};
+// 		yellow {
+// 			label = "yellow";
+// 			linux,default-trigger = "none";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};
 
-		cyan {
-			label = "cyan";
-			linux,default-trigger = "none";
-			default-state = "off";
-			retain-state-suspended;
-		};
-		purple {
-			label = "purple";
-			linux,default-trigger = "none";
-			default-state = "off";
-			retain-state-suspended;
-		};				
+// 		cyan {
+// 			label = "cyan";
+// 			linux,default-trigger = "none";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};
+// 		purple {
+// 			label = "purple";
+// 			linux,default-trigger = "none";
+// 			default-state = "off";
+// 			retain-state-suspended;
+// 		};				
 		
-	};
-};
+// 	};
+// };
 
-/*audio bring up ,zhangjianming2.wt start*/
-&i2c_8  {
-	tfa9895@34 { /*tfa9895 */
-		compatible = "nxp,tfa9895";
-		reg = <0x34>;
-	};
-	tfa9895l@35 { /*tfa9895l */
-		compatible = "nxp,tfa9895l";
-		reg = <0x35>;
-	};
-};
-/*audio bring up ,zhangjianming2.wt end*/
+// /*audio bring up ,zhangjianming2.wt start*/
+// &i2c_8  {
+// 	tfa9895@34 { /*tfa9895 */
+// 		compatible = "nxp,tfa9895";
+// 		reg = <0x34>;
+// 	};
+// 	tfa9895l@35 { /*tfa9895l */
+// 		compatible = "nxp,tfa9895l";
+// 		reg = <0x35>;
+// 	};
+// };
+// /*audio bring up ,zhangjianming2.wt end*/
 
 &pm8953_gpios {
 	/* GPIO 2 (NFC_CLK_REQ)  qcom,pull = <0>; */
