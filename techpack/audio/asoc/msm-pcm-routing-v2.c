@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1446,6 +1446,11 @@ static int msm_pcm_routing_channel_mixer(int fe_id, bool perf_mode,
 	for (i = 0; i < ADM_MAX_CHANNELS && channel_input[fe_id][i] > 0;
 		++i) {
 		be_id = channel_input[fe_id][i] - 1;
+		if (be_id < 0 || be_id >= MSM_BACKEND_DAI_MAX) {
+			pr_err("%s: Received out of bounds be_id %d\n",
+					__func__, be_id);
+			return -EINVAL;
+		}
 		channel_mixer[fe_id].input_channels[i] =
 						msm_bedais[be_id].channel;
 
@@ -1996,6 +2001,11 @@ static void msm_pcm_routing_process_voice(u16 reg, u16 val, int set)
 	pr_debug("%s: reg %x val %x set %x\n", __func__, reg, val, set);
 
 	session_id = msm_pcm_routing_get_voc_sessionid(val);
+
+	if (!session_id) {
+		pr_err("%s: Invalid session_id %x\n", __func__, session_id);
+		return;
+	}
 
 	pr_debug("%s: FE DAI 0x%x session_id 0x%x\n",
 		__func__, val, session_id);
@@ -2957,10 +2967,10 @@ static int msm_pcm_get_out_chs(struct snd_kcontrol *kcontrol,
 static int msm_pcm_put_out_chs(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
-	u16 fe_id = 0;
-
+	u16 fe_id = 0, out_ch = 0;
 	fe_id = ((struct soc_multi_mixer_control *)
 			kcontrol->private_value)->shift;
+	out_ch = ucontrol->value.integer.value[0];
 	if (fe_id >= MSM_FRONTEND_DAI_MM_SIZE) {
 		pr_err("%s: invalid FE %d\n", __func__, fe_id);
 		return -EINVAL;
@@ -2969,6 +2979,12 @@ static int msm_pcm_put_out_chs(struct snd_kcontrol *kcontrol,
 	pr_debug("%s: fe_id is %d, output channels = %d\n", __func__,
 			fe_id,
 			(unsigned int)(ucontrol->value.integer.value[0]));
+	if (out_ch < 0 ||
+		out_ch > ADM_MAX_CHANNELS) {
+		pr_err("%s: invalid output channel %d\n", __func__,
+				out_ch);
+		return -EINVAL;
+	}
 	channel_mixer[fe_id].output_channel =
 			(unsigned int)(ucontrol->value.integer.value[0]);
 
@@ -4082,6 +4098,15 @@ static const struct snd_kcontrol_new pri_i2s_rx_mixer_controls[] = {
 	MSM_BACKEND_DAI_PRI_I2S_RX,
 	MSM_FRONTEND_DAI_MULTIMEDIA29, 1, 0, msm_routing_get_audio_mixer,
 	msm_routing_put_audio_mixer),
+};
+
+static const struct snd_kcontrol_new mi2s_hl_mixer_controls[] = {
+	SOC_DOUBLE_EXT("PRI_MI2S_TX", SND_SOC_NOPM, MSM_BACKEND_DAI_SECONDARY_MI2S_RX,
+	MSM_BACKEND_DAI_PRI_MI2S_TX, 1, 0, msm_routing_get_port_mixer,
+	msm_routing_put_port_mixer),
+	SOC_DOUBLE_EXT("INTERNAL_FM_TX", SND_SOC_NOPM, MSM_BACKEND_DAI_SECONDARY_MI2S_RX,
+	MSM_BACKEND_DAI_INT_FM_TX, 1, 0, msm_routing_get_port_mixer,
+	msm_routing_put_port_mixer),
 };
 
 static const struct snd_kcontrol_new sec_i2s_rx_mixer_controls[] = {
@@ -12424,6 +12449,7 @@ static const struct snd_kcontrol_new quin_mi2s_rx_port_mixer_controls[] = {
 	MSM_BACKEND_DAI_SLIMBUS_8_TX, 1, 0, msm_routing_get_port_mixer,
 	msm_routing_put_port_mixer),
 };
+/*-----------audio bring up ,zhangjianming.wt -------------------*/
 
 static const struct snd_kcontrol_new pri_tdm_rx_0_port_mixer_controls[] = {
 	SOC_DOUBLE_EXT("PRI_MI2S_TX", SND_SOC_NOPM,
@@ -13268,6 +13294,8 @@ static const struct snd_kcontrol_new sec_tdm_rx_3_port_mixer_controls[] = {
 		msm_routing_get_port_mixer,
 		msm_routing_put_port_mixer),
 };
+
+/*-----------audio bring up ,zhangjianming.wt -------------------*/
 
 static const struct snd_kcontrol_new tert_tdm_rx_0_port_mixer_controls[] = {
 	SOC_DOUBLE_EXT("PRI_MI2S_TX", SND_SOC_NOPM,
@@ -15213,9 +15241,9 @@ static int msm_routing_put_app_type_cfg_control(struct snd_kcontrol *kcontrol,
 
 	memset(app_type_cfg, 0, MAX_APP_TYPES*
 				sizeof(struct msm_pcm_routing_app_type_data));
-	if (num_app_types > MAX_APP_TYPES) {
-		pr_err("%s: number of app types exceed the max supported\n",
-			__func__);
+	if (num_app_types > MAX_APP_TYPES  || num_app_types < 0) {
+		pr_err("%s: number of app types %d is invalid\n",
+			__func__, num_app_types);
 		return -EINVAL;
 	}
 	for (j = 0; j < num_app_types; j++) {
@@ -15385,9 +15413,10 @@ static int msm_routing_put_lsm_app_type_cfg_control(
 	int i = 0, j;
 	int num_app_types;
 
-	if (ucontrol->value.integer.value[0] > MAX_APP_TYPES) {
-		pr_err("%s: number of app types exceed the max supported\n",
-			__func__);
+	if (ucontrol->value.integer.value[0] < 0 ||
+		ucontrol->value.integer.value[0] > MAX_APP_TYPES) {
+		pr_err("%s: number of app types %ld is invalid\n",
+			__func__, ucontrol->value.integer.value[0]);
 		return -EINVAL;
 	}
 
@@ -16882,6 +16911,9 @@ static const struct snd_soc_dapm_widget msm_qdsp6_widgets[] = {
 	SND_SOC_DAPM_MIXER("SEC_MI2S_RX_SD1 Audio Mixer", SND_SOC_NOPM, 0, 0,
 			   secondary_mi2s_rx2_mixer_controls,
 			   ARRAY_SIZE(secondary_mi2s_rx2_mixer_controls)),
+	SND_SOC_DAPM_MIXER("SEC_MI2S_RX Port Mixer", SND_SOC_NOPM, 0, 0,
+			   mi2s_hl_mixer_controls,
+			   ARRAY_SIZE(mi2s_hl_mixer_controls)),
 	SND_SOC_DAPM_MIXER("PRI_MI2S_RX Audio Mixer", SND_SOC_NOPM, 0, 0,
 			   primary_mi2s_rx_mixer_controls,
 			   ARRAY_SIZE(primary_mi2s_rx_mixer_controls)),
@@ -17740,6 +17772,9 @@ static const struct snd_soc_dapm_route intercon[] = {
 
 	{"SEC_MI2S_RX_SD1 Audio Mixer", "MultiMedia6", "MM_DL6"},
 	{"SEC_MI2S_RX_SD1", NULL, "SEC_MI2S_RX_SD1 Audio Mixer"},
+
+	{"SEC_MI2S_RX Port Mixer", "PRI_MI2S_TX", "PRI_MI2S_TX"},
+	{"SEC_MI2S_RX Port Mixer", "INTERNAL_FM_TX", "INT_FM_TX"},
 
 	{"SEC_MI2S_RX Port Mixer", "PRI_MI2S_TX", "PRI_MI2S_TX"},
 	{"SEC_MI2S_RX Port Mixer", "INTERNAL_FM_TX", "INT_FM_TX"},
@@ -20324,6 +20359,15 @@ static const struct snd_soc_dapm_route intercon[] = {
 	{"QUIN_MI2S_RX Port Mixer", "SLIM_0_TX", "SLIMBUS_0_TX"},
 	{"QUIN_MI2S_RX Port Mixer", "SLIM_8_TX", "SLIMBUS_8_TX"},
 	{"QUIN_MI2S_RX", NULL, "QUIN_MI2S_RX Port Mixer"},
+       /*-----------audio bring up ,zhangjianming.wt -------------------*/
+	{"QUIN_MI2S_RX Port Mixer", "QUIN_MI2S_TX", "QUIN_MI2S_TX"},
+	{"QUIN_MI2S_RX Port Mixer", "TERT_MI2S_TX", "TERT_MI2S_TX"},
+	{"QUIN_MI2S_RX Port Mixer", "PRI_MI2S_TX", "PRI_MI2S_TX"},
+	{"QUIN_MI2S_RX Port Mixer", "SLIM_0_TX", "SLIMBUS_0_TX"},
+	{"QUIN_MI2S_RX Port Mixer", "INTERNAL_FM_TX", "INT_FM_TX"},
+	{"QUIN_MI2S_RX Port Mixer", "INTERNAL_BT_SCO_TX", "INT_BT_SCO_TX"},
+	{"QUIN_MI2S_RX", NULL, "QUIN_MI2S_RX Port Mixer"},
+	/*-----------audio bring up ,zhangjianming.wt -------------------*/
 
 	/* Backend Enablement */
 

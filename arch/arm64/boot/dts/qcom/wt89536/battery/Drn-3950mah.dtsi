@@ -1,0 +1,15 @@
+//卡电量修复,从原厂包提取的
+qcom,Drn_3950mah {
+        qcom,max-voltage-uv = <0x432380>;
+        qcom,nom-batt-capacity-mah = <0xf6e>;
+        qcom,batt-id-kohm = <0x1e>;
+        qcom,battery-beta = <0xd34>;
+        qcom,battery-type = "Drn_3950mah";
+        qcom,chg-rslow-comp-c1 = <0x426dcb>;
+        qcom,chg-rslow-comp-c2 = <0x882e45>;
+        qcom,chg-rs-to-rslow = <0xd5bdb>;
+        qcom,chg-rslow-comp-thr = <0xc1>;
+        qcom,checksum = <0x55eb>;
+        qcom,gui-version = "PMI8950GUI - 2.0.0.16";
+        qcom,fg-profile-data = <0xf0837b7d 0xa1812b7c 0x5c830e67 0xf982958d 0x4f827d98 0x65b620c2 0x58130788 0x197e0182 0x767c5583 0x7169037a 0x40874082 0xf79943bd 0x52ca590d 0x810f6e59 0x147036fd 0xe1366046 0xeb400000 0x4847fe30 0x27380000 0x00 0x00 0xc70576a 0x6f6f0d88 0xec773071 0x756da479 0x2a752b6a 0xb465dca1 0x2df96125 0x64a0710c 0x2800ff36 0xf0113003 0x0c>;
+};

@@ -1,0 +1,76 @@
+/ {
+	qrd_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "battery/B5W-qrd-Coslight-4v4-4000mah.dtsi"
+		#include "battery/n2-qrd-atl-4000mah.dtsi"
+        #include "battery/Drn-3950mah.dtsi"
+	};
+};
+/* pmi8950.dtsi msm8953-general-taco.dtsi */
+
+&adv_vreg {
+	status = "disabled";
+};
+
+&pmi8950_gpios {
+	status = "disabled";
+};
+
+&pmi8950_mpps {
+	status = "disabled";
+};
+
+&qpnp_fg{
+    qcom,battery-data = <&qrd_batterydata>;
+    qcom,float-voltage-mv = <4400>;
+    qcom,resume-delta-mv = <50>;
+    qcom,charge-unknown-battery;
+    qcom,thermal-mitigation = <2000 1600 1500 1200 1000>;
+    qcom,parallel-usb-min-current-ma = <1400>;
+    qcom,parallel-usb-9v-min-current-ma = <900>;
+    qcom,parallel-allowed-lowering-ma = <500>;
+    status = "okay";
+    /delete-property/ qcom,chg-inhibit-fg;
+    /delete-property/ qcom,chg-led-sw-controls;
+    /delete-property/ qcom,chg-led-support;
+    /delete-property/ qcom,external-typec;
+    /delete-property/ qcom,typec-psy-name;
+    /delete-property/ qcom,autoadjust-vfloat;
+};
+&qpnp_fg{
+    qcom,battery-data = <&qrd_batterydata>;
+    qcom,fg-cutoff-voltage-mv = <3300>;
+    qcom,fg-cc-cv-threshold-mv = <4390>;
+    qcom,fg-chg-iterm-ma = <150>;
+    qcom,fg-iterm-ma = <200>;
+    qcom,fg-vbat-estimate-diff-mv = <200>;
+    qcom,thermal-coefficients = [DA 86 F0 50 08 3C];
+    qcom,cl-max-increment-deciperc = <1>;
+    qcom,cl-max-decrement-deciperc = <1>;
+    qcom,fg-delta-soc = <1>;
+    qcom,cold-hot-jeita-hysteresis = <50 70>;
+    qcom,bad-battery-detection-enable;
+    qcom,hold-soc-while-full;
+    qcom,cold-bat-decidegc = <(-50)>;
+    qcom,cool-bat-decidegc = <100>;
+    qcom,warm-bat-decidegc = <450>;
+    qcom,hot-bat-decidegc = <570>;
+
+    /delete-property/ qcom,resume-soc;
+};
+
+&i2c_2 {
+	pericom-type-c@1d {
+		status="disabled";
+	};
+	/* Parallel-charger configuration */
+	smb1351-charger@1d {
+		compatible = "qcom,smb1351-charger";
+		reg = <0x1d>;
+		qcom,parallel-en-pin-polarity = <1>;
+		qcom,parallel-charger;
+		qcom,float-voltage-mv = <4400>;
+		qcom,recharge-mv = <100>;
+	};
+};
+

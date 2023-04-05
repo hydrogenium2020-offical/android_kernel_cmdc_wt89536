@@ -13,8 +13,8 @@
 
 /dts-v1/;
 
-#include "msm8953.dtsi"
-#include "pmi8950.dtsi"
+#include "taco/common/msm8953.dtsi"
+#include "taco/common/pmi8950.dtsi"
 #include "msm8953-pmi8950.dtsi"
 
 / {

@@ -1,0 +1,159 @@
+/* msm-audio.dtsi */
+&dai_mi2s4 {
+    qcom,msm-mi2s-rx-lines = <0xc>;
+    qcom,msm-mi2s-tx-lines = <3>;
+};
+&int_codec {
+    qcom,msm-ext-pa = "quinary";
+    qcom,audio-routing =
+            "RX_BIAS", "MCLK",
+            "SPK_RX_BIAS", "MCLK",
+            "INT_LDO_H", "MCLK",
+            "RX_I2S_CLK", "MCLK",
+            "TX_I2S_CLK", "MCLK",
+            "MIC BIAS External", "Handset Mic",
+            "MIC BIAS External2", "Headset Mic",
+            "MIC BIAS External", "Secondary Mic",
+            "AMIC1", "MIC BIAS External",
+            "AMIC2", "MIC BIAS External2",
+            "AMIC3", "MIC BIAS External",
+            "ADC1_IN", "ADC1_OUT",
+            "ADC2_IN", "ADC2_OUT",
+            "ADC3_IN", "ADC3_OUT",
+            "PDM_IN_RX1", "PDM_OUT_RX1",
+            "PDM_IN_RX2", "PDM_OUT_RX2",
+            "PDM_IN_RX3", "PDM_OUT_RX3";
+    /delete-property/ qcom,hdmi-dba-codec-rx;
+    /* delete us_eu_gpio from qcom,msm-gpios list */
+};
+// &int_codec {
+//     status = "okay";
+//     qcom,model = "msm8953-snd-card-mtp";
+//     qcom,msm-mbhc-hphl-swh = <1>;
+//     qcom,msm-hs-micbias-type = "internal";
+//     qcom,audio-routing =
+// 					"RX_BIAS", "MCLK",
+// 					"SPK_RX_BIAS", "MCLK",
+// 					"INT_LDO_H", "MCLK",
+// 					"MIC BIAS External", "Handset Mic",
+// 					"MIC BIAS Internal2", "Headset Mic",
+// 					"MIC BIAS External", "Secondary Mic",
+// 					"AMIC1", "MIC BIAS External",
+// 					"AMIC2", "MIC BIAS Internal2",
+// 					"AMIC3", "MIC BIAS External",
+// 					"WSA_SPK OUT", "VDD_WSA_SWITCH",
+// 					"SpkrMono WSA_IN", "WSA_SPK OUT";
+
+//     /delete-property/ asoc-wsa-codec-names;
+//     /delete-property/ asoc-wsa-codec-prefixes;
+// };
+
+/* msm8953-audio-mtp.dtsi */
+&int_codec {
+	qcom,msm-hs-micbias-type = "external";
+};
+
+
+/* msm8953-audio.dtsi */
+&int_codec {
+    /delete-property/ qcom,cdc-us-euro-gpios;
+    /delete-property/ qcom,cdc-us-eu-gpios;
+	qcom,msm-mbhc-hphl-swh = <1>;
+	qcom,msm-mbhc-gnd-swh = <1>;
+	qcom,msm-hs-micbias-type = "external";
+    /* GPIO changes, will have to figure it out later */
+    /* hdmi-dba doesn't exist on k4.9 asoc-codec */
+    /delete-property/ asoc-wsa-codec-names;
+    /delete-property/ asoc-wsa-codec-prefixes;
+    /delete-property/ msm-vdd-wsa-switch-supply;
+    /delete-property/ qcom,msm-vdd-wsa-switch-voltage;
+    /delete-property/ qcom,msm-vdd-wsa-switch-current;
+};
+
+/* msm8953-oxygen.dtsi */
+&soc {
+	spk_id_pin: spk-id-pin@9 {
+		compatible = "audio,speaker-id";
+		audio,speaker-id-gpio = <&tlmm 9 0x00>;
+		pinctrl-names = "pull_down", "pull_up", "no_pull";
+		pinctrl-0 = <&spk_id_pull_down>;
+		pinctrl-1 = <&spk_id_pull_up>;
+		pinctrl-2 = <&spk_id_no_pull>;
+	};
+};
+&soc{
+    /*audio bring up zhangjianming2.wt  start */
+	i2c_8: i2c@7af8000 { /* BLSP2 QUP4 */
+        compatible = "qcom,i2c-msm-v2";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        reg-names = "qup_phys_addr";
+        reg = <0x7af8000 0x600>;
+        interrupt-names = "qup_irq";
+        interrupts = <0 302 0>;
+        qcom,clk-freq-out = <400000>;
+        qcom,clk-freq-in  = <19200000>;
+        clock-names = "iface_clk", "core_clk";
+        clocks = <&clock_gcc clk_gcc_blsp2_ahb_clk>,
+            <&clock_gcc clk_gcc_blsp2_qup4_i2c_apps_clk>;
+
+        pinctrl-names = "i2c_active", "i2c_sleep";
+        pinctrl-0 = <&i2c_8_active>;
+        pinctrl-1 = <&i2c_8_sleep>;
+        qcom,noise-rjct-scl = <0>;
+        qcom,noise-rjct-sda = <0>;
+        qcom,master-id = <84>;
+        dmas = <&dma_blsp2 10 64 0x20000020 0x20>,
+        <&dma_blsp2 11 32 0x20000020 0x20>;
+        dma-names = "tx", "rx";
+        
+        tfa98xx@34 { /*tfa9895 */
+            compatible = "nxp,tfa98xx";
+            reg = <0x34>;
+            nxp,tfa_max-vol-steps=<0x01>;
+            nxp,reset-gpio = <&tlmm 89 0>;
+            nxp,irq-gpio = <&tlmm 90 0x2008>;
+            pinctrl-names = "nxp_reset_active","nxp_reset_suspend";
+            pinctrl-0 = <&nxp_reset_active>;
+            pinctrl-1 = <&nxp_reset_sleep>;
+            status = "okay";
+        };
+	};
+};
+
+
+/* Custom changes
+
+&wsa881x_i2c_e {
+	status = "disabled";
+};
+&wsa881x_i2c_44 {
+	status = "disabled";
+};
+
+&wsa881x_i2c_f {
+	status = "disabled";
+};
+&wsa881x_i2c_45 {
+	status = "disabled";
+};
+
+&wsa881x_analog_vi_gpio {
+        status = "disabled";
+};
+
+&wsa881x_analog_clk_gpio {
+        status = "disabled";
+};
+
+&wsa881x_analog_reset_gpio {
+        status = "disabled";
+};
+*/
+&msm_digital_codec {
+	status = "okay";
+};
+
+&pmic_analog_codec {
+	status = "okay";
+};

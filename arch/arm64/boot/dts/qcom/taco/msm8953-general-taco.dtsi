@@ -48,6 +48,27 @@
 	status = "disabled";
 };
 
+&pmi8950_gpios {
+	status = "disabled";
+};
+
+&pmi8950_mpps {
+	status = "disabled";
+};
+
+&pm8953_vadc{
+	chan@36 {
+		qcom,decimation = <1>;
+		qcom,fast-avg-setup = <5>;
+	};
+};
+&pm8953_adc_tm{
+	chan@36 {
+		qcom,decimation = <1>;
+		qcom,fast-avg-setup = <5>;
+	};
+};
+
 &spmi_bus {
 	qcom,pm8953@0 {
 		qcom,power-on@800 {
@@ -60,13 +81,10 @@
 		    };
 	    };
     };
-    qcom,pm8953@1 {
-        8953_wcd_codec@f100 {
-            status = "okay";
-        };
-    };
+	
+    /delete-node/ qcom,pm8953_typec@bf00;
     qcom,pmi8950@2 {
-        pmi8950_charger: qcom,qpnp-smbcharger {
+        qpnp_smbcharger: qcom,qpnp-smbcharger {
             qcom,float-voltage-mv = <4400>;
             qcom,resume-delta-mv = <50>;
             qcom,charge-unknown-battery;
@@ -83,7 +101,7 @@
             /delete-property/ qcom,typec-psy-name;
             /delete-property/ qcom,autoadjust-vfloat;
         };
-        pmi8950_fg: qcom,fg {
+        qpnp_fg: qcom,fg {
             qcom,fg-cutoff-voltage-mv = <3300>;
             qcom,fg-cc-cv-threshold-mv = <4390>;
             qcom,fg-chg-iterm-ma = <150>;
@@ -121,6 +139,7 @@
         };
     };
     qcom,pmi8950@3 {
+
         pmi8950_pwm: pwm@b000 {
             status = "okay";
         };
@@ -157,33 +176,14 @@
 				qcom,current = <100>;
             };
         };
-
-		
+        pmi_haptic: qcom,haptics@c000 {
+			qcom,actuator-type = <1>;
+			qcom,vmax-mv = <3000>;
+			qcom,use-play-irq;
+			qcom,use-sc-irq;
+		};
     };
 };
-
-&pmi_haptic{
-	compatible = "qcom,qpnp-haptic";
-					reg = <0xc000 0x100>;
-					interrupts = <0x03 0xc0 0x00 0x03 0xc0 0x01>;
-					interrupt-names = "sc-irq\0play-irq";
-					qcom,play-mode = "direct";
-					qcom,wave-play-rate-us = <0x148f>;
-					qcom,actuator-type = "erm";
-					qcom,wave-shape = "square";
-					qcom,vmax-mv = <0xbb8>;
-					qcom,ilim-ma = <0x320>;
-					qcom,sc-deb-cycles = <0x08>;
-					qcom,int-pwm-freq-khz = <0x1f9>;
-					qcom,en-brake;
-					qcom,brake-pattern = <0x3030000>;
-					qcom,use-play-irq;
-					qcom,use-sc-irq;
-					qcom,wave-samples = <0x3e3e3e3e 0x3e3e3e3e>;
-					qcom,wave-rep-cnt = <0x01>;
-					qcom,wave-samp-rep-cnt = <0x01>;
-};
-
 
 &usb3 {
     vbus_dwc3-supply = <&smbcharger_charger_otg>;
@@ -197,6 +197,9 @@
     };
 };
 
+&pmi_haptic {
+	qcom,vmax-mv = <2500>;
+};
 
 &soc {
 	led_flash0: qcom,camera-flash {
@@ -459,74 +462,77 @@
 	};
 };
 
-// &i2c_6  { /* i2c 6 */
-// 	et6326@30 { /*blink */
-// 		compatible = "awinc,et6326";
-// 		reg = <0x30>;
-// 		rgb_led-supply = <&pm8953_l10>;
+&i2c_6  { /* i2c 6 */
+	et6326@30 { /*blink */
+		compatible = "awinc,et6326";
+		reg = <0x30>;
+		rgb_led-supply = <&pm8953_l10>;
 		
-// 		red {
-// 			label = "red";
-// 			linux,default-trigger = "battery-red";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};
+		red {
+			label = "red";
+			linux,default-trigger = "battery-red";
+			default-state = "off";
+			retain-state-suspended;
+		};
 
-// 		green {
-// 			label = "green";
-// 			linux,default-trigger = "battery-green";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};
+		green {
+			label = "green";
+			linux,default-trigger = "battery-green";
+			default-state = "off";
+			retain-state-suspended;
+		};
 
-// 		blue {
-// 			label = "blue";
-// 			linux,default-trigger = "battery-blue";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};
-// 		white {
-// 			label = "white";
-// 			linux,default-trigger = "none";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};
+		blue {
+			label = "blue";
+			linux,default-trigger = "battery-blue";
+			default-state = "off";
+			retain-state-suspended;
+		};
+		white {
+			label = "white";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
 
-// 		yellow {
-// 			label = "yellow";
-// 			linux,default-trigger = "none";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};
+		yellow {
+			label = "yellow";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
 
-// 		cyan {
-// 			label = "cyan";
-// 			linux,default-trigger = "none";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};
-// 		purple {
-// 			label = "purple";
-// 			linux,default-trigger = "none";
-// 			default-state = "off";
-// 			retain-state-suspended;
-// 		};				
+		cyan {
+			label = "cyan";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
+		purple {
+			label = "purple";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};				
 		
-// 	};
-// };
+	};
+};
 
-// /*audio bring up ,zhangjianming2.wt start*/
-// &i2c_8  {
-// 	tfa9895@34 { /*tfa9895 */
-// 		compatible = "nxp,tfa9895";
-// 		reg = <0x34>;
-// 	};
-// 	tfa9895l@35 { /*tfa9895l */
-// 		compatible = "nxp,tfa9895l";
-// 		reg = <0x35>;
-// 	};
-// };
-// /*audio bring up ,zhangjianming2.wt end*/
+/*audio bring up ,zhangjianming2.wt start*/
+&i2c_8  {
+	tfa9895@34 { /*tfa9895 */
+		compatible = "nxp,tfa9895";
+		reg = <0x34>;
+		nxp,tfa_max-vol-steps=<0x01>;
+		nxp,reset-gpio = <&tlmm 89 0>;
+		nxp,irq-gpio = <&tlmm 90 0x2008>;
+		pinctrl-names = "nxp_reset_active","nxp_reset_suspend";
+		pinctrl-0 = <&nxp_reset_active>;
+		pinctrl-1 = <&nxp_reset_sleep>;
+		status = "okay";
+	};
+};
+/*audio bring up ,zhangjianming2.wt end*/
 
 &pm8953_gpios {
 	/* GPIO 2 (NFC_CLK_REQ)  qcom,pull = <0>; */
@@ -561,24 +567,24 @@
 };
 
 &i2c_5 { /* BLSP2 QUP1 (NFC) */
-	nq@28 {
-		compatible = "nxp,pn547";
-		nxp,irq-gpio = <&tlmm 17 0x00>;
-		nxp,ven-gpio = <&tlmm 16 0x00>;
-		nxp,firm-gpio = <&tlmm 62 0x00>;
-		nxp,clkreq-gpio = <&pm8953_gpios 2 0x00>;
-		nxp,clk-src = "BBCLK2";
-
-		/delete-property/ qcom,nq-irq;
-		/delete-property/ qcom,nq-ven;
-		/delete-property/ qcom,nq-firm;
-		/delete-property/ qcom,nq-clkreq;
-		/delete-property/ qcom,clk-src;
-	};
-};
-
-&i2c_5 {
-        status = "ok";
+	status = "ok";
+	nxp@28 {
+            compatible = "nxp,pn547";
+            reg = <0x28>;
+            qcom,nxp-irq = <&tlmm 17 0x00>;
+            qcom,nxp-ven = <&tlmm 16 0x00>;
+            qcom,nxp-dw-req = <&tlmm 62 0x00>;
+            qcom,nxp-clkreq = <&pm8953_gpios 2 0x00>;
+            interrupt-parent = <&tlmm>;
+            qcom,clk-src = "BBCLK2";
+            interrupts = <17 0>;
+            interrupt-names = "nxp-irq";
+            pinctrl-names = "nfc_active", "nfc_suspend";
+            pinctrl-0 = <&nfc_int_active &nfc_disable_active>;
+            pinctrl-1 = <&nfc_int_suspend &nfc_disable_suspend>;
+            clocks = <&clock_gcc clk_bb_clk2_pin>;
+            clock-names = "ref_clk";
+    };
 };
 
 &apps_iommu {

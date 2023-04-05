@@ -1,0 +1,259 @@
+/* pmi8950.dtsi */
+&spmi_bus {
+    qcom,pmi8950@2 {
+        qcom,leds@a100 {
+            status = "okay";
+            qcom,led_mpp_2 {
+			label = "mpp";
+			linux,name = "button-backlight";
+			linux,default-trigger = "none";
+			qcom,default-state = "off";
+			qcom,max-current = <40>;
+			qcom,current-setting = <3>;
+			qcom,id = <6>;
+			qcom,mode = "manual";
+			qcom,source-sel = <1>;
+			qcom,mode-ctrl = <0x60>;
+            };
+        };
+    };
+};
+//EMMC//
+&sdhc_1 {
+	/* emmc5.0 of hynix flash */
+	qcom,vdd-always-on;
+};
+
+&sdhc_2 {
+	cd-gpios = <&tlmm 133 0x0>;
+};
+//SMMU/
+&apps_iommu {
+	qcom,no-aarch64;
+};
+
+&rpm_bus {
+    rpm-regulator-ldoa6 {
+        regulator-l6 {
+            regulator-always-on;
+        };
+    };
+};
+
+//LED
+&soc{
+	gpio-leds {
+		compatible = "gpio-leds";
+		status = "okay";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_led_off>;
+
+		infred {
+			gpios = <&tlmm 45 0>;
+			label = "infrared";
+			linux,default-trigger = "infra-red";
+			default-state = "off";
+			retain-state-suspended;
+		};
+	};
+};
+
+&soc{
+	 /*audio bring up zhangjianming2.wt  start */
+	i2c_6: i2c@7af6000 { /* BLSP2 QUP1 */
+		compatible = "qcom,i2c-msm-v2";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg-names = "qup_phys_addr";
+		reg = <0x7af6000 0x600>;
+		interrupt-names = "qup_irq";
+		interrupts = <0 300 0>;
+		qcom,clk-freq-out = <100000>;
+		qcom,clk-freq-in  = <19200000>;
+		clock-names = "iface_clk", "core_clk";
+		clocks = <&clock_gcc clk_gcc_blsp2_ahb_clk>,
+			<&clock_gcc clk_gcc_blsp2_qup2_i2c_apps_clk>;
+
+		pinctrl-names = "i2c_active", "i2c_sleep";
+		pinctrl-0 = <&i2c_6_active>;
+		pinctrl-1 = <&i2c_6_sleep>;
+		qcom,noise-rjct-scl = <1>;
+		qcom,noise-rjct-sda = <1>;
+		qcom,master-id = <84>;
+		dmas = <&dma_blsp2 6 64 0x20000020 0x20>,
+			<&dma_blsp2 7 32 0x20000020 0x20>;
+		dma-names = "tx", "rx";
+		status = "ok";
+	};
+};
+&i2c_6  { /* i2c 6 */
+	et6326@30 { /*blink */
+		compatible = "awinc,et6326";
+		reg = <0x30>;
+		rgb_led-supply = <&pm8953_l10>;
+		
+		red {
+			label = "red";
+			linux,default-trigger = "battery-red";
+			default-state = "off";
+			retain-state-suspended;
+		};
+
+		green {
+			label = "green";
+			linux,default-trigger = "battery-green";
+			default-state = "off";
+			retain-state-suspended;
+		};
+
+		blue {
+			label = "blue";
+			linux,default-trigger = "battery-blue";
+			default-state = "off";
+			retain-state-suspended;
+		};
+		white {
+			label = "white";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
+
+		yellow {
+			label = "yellow";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
+
+		cyan {
+			label = "cyan";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
+		purple {
+			label = "purple";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};				
+		
+	};
+};
+
+//NFC
+
+&i2c_5 { /* BLSP2 QUP1 (NFC) */
+	status = "ok";
+	nxp@28 {
+            compatible = "nxp,pn547";
+            reg = <0x28>;
+            qcom,nxp-irq = <&tlmm 17 0x00>;
+            qcom,nxp-ven = <&tlmm 16 0x00>;
+            qcom,nxp-dw-req = <&tlmm 62 0x00>;
+            qcom,nxp-clkreq = <&pm8953_gpios 2 0x00>;
+            interrupt-parent = <&tlmm>;
+            qcom,clk-src = "BBCLK2";
+            interrupts = <17 0>;
+            interrupt-names = "nxp-irq";
+            pinctrl-names = "nfc_active", "nfc_suspend";
+            pinctrl-0 = <&nfc_int_active &nfc_disable_active>;
+            pinctrl-1 = <&nfc_int_suspend &nfc_disable_suspend>;
+            clocks = <&clock_gcc clk_bb_clk2_pin>;
+            clock-names = "ref_clk";
+    };
+};
+
+&pm8953_gpios {
+	/* GPIO 2 (NFC_CLK_REQ)  qcom,pull = <0>; */
+	gpio@c100 {
+		qcom,pull = <5>;
+		qcom,dtest-sel = <1>; 
+	};
+};
+
+//???
+
+&soc {
+	led_flash0: qcom,camera-flash {
+		cell-index = <0>;
+		compatible = "qcom,camera-flash";
+		qcom,flash-type = <1>;
+		qcom,flash-source = <&pmi8950_flash0 &pmi8950_flash1>;
+		qcom,torch-source = <&pmi8950_torch0 &pmi8950_torch1 &pmi8950_torch2>;
+		qcom,switch-source = <&pmi8950_switch>;
+	};
+
+	sn_fuse: snfuse@0xa0128 {
+		compatible = "qcom,sn-fuse";
+		reg = <0xa0128 0x4>;
+		reg-names = "sn-base";
+	};
+
+
+	sec_boot_fuse: secbootfuse@0xa41d0 {
+		compatible = "qcom,sec-boot-fuse";
+		reg = <0xa41d0 0x4>;
+		reg-names = "sec-boot-base";
+	};
+
+	qcom_seecom: qseecom@84A00000 {
+		compatible = "qcom,qseecom";
+		reg = <0x84A00000 0x1900000>;
+		reg-names = "secapp-region";
+		qcom,hlos-num-ce-hw-instances = <1>;
+		qcom,hlos-ce-hw-instance = <0>;
+		qcom,qsee-ce-hw-instance = <0>;
+		qcom,disk-encrypt-pipe-pair = <2>;
+		qcom,support-fde;
+		qcom,msm-bus,name = "qseecom-noc";
+		qcom,msm-bus,num-cases = <4>;
+		qcom,msm-bus,num-paths = <1>;
+		qcom,support-bus-scaling;
+		qcom,appsbl-qseecom-support;
+		qcom,msm-bus,vectors-KBps =
+			<55 512 0 0>,
+			<55 512 0 0>,
+			<55 512 120000 1200000>,
+			<55 512 393600 3936000>;
+		clocks = <&clock_gcc clk_crypto_clk_src>,
+			 <&clock_gcc clk_gcc_crypto_clk>,
+			 <&clock_gcc clk_gcc_crypto_ahb_clk>,
+			 <&clock_gcc clk_gcc_crypto_axi_clk>;
+		clock-names = "core_clk_src", "core_clk",
+				"iface_clk", "bus_clk";
+		qcom,ce-opp-freq = <100000000>;
+	};
+
+	/delete-node/ qseecom@85b00000;
+
+	boardinfo {
+		compatible = "wt:boardinfo";
+	};
+};
+
+/* Haptics */
+&pmi_haptic{
+
+	// qcom,actuator-type = <1>;
+	// qcom,vmax-mv = <3000>;
+	// qcom,use-play-irq;
+	// qcom,use-sc-irq;
+
+	qcom,actuator-type = "lra";
+	qcom,lra-auto-resonance-mode = "qwd";
+	qcom,lra-resonance-sig-shape = "sine";
+//	qcom,lra-high-z="opt1";
+//	qcom,lra-res-cal-period = <4>;
+//	qcom,misc-trim-error-rc19p2-clk-reg-present;
+//	qcom,brake-pattern = [03 02 01 00];
+	qcom,play-rate-us = <5100>;
+	qcom,vmax-mv = <3000>;
+	wf_0 { qcom,wf-vmax-mv = <3000>; };
+	wf_1 { qcom,wf-vmax-mv = <3000>; };
+	wf_2 { qcom,wf-vmax-mv = <3000>; };
+	wf_3 { qcom,wf-vmax-mv = <3000>; };
+	wf_4 { qcom,wf-vmax-mv = <3000>; };
+	wf_5 { qcom,wf-vmax-mv = <3000>; };
+};
